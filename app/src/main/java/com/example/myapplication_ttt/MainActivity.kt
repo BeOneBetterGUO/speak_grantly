@@ -251,10 +251,27 @@ fun VideoPlayerWithTime(
                         markerToDelete?.let { onDeleteMarker(it.timeMs) }
                     }
                 }) {
-                    Text("删除标记")
+                    Text("删除（仅暂停时）")
                 }
             }
             item {
+                var buttonText by remember { mutableStateOf("循环播放") }
+
+                LaunchedEffect(currentPosition) {
+                    val previousMarker = markers.lastOrNull { it.timeMs <= currentPosition }
+                    val nextMarker = markers.firstOrNull { it.timeMs > currentPosition }
+                    if (previousMarker != null && nextMarker != null) {
+                        startMarker = previousMarker.timeMs
+                        endMarker = nextMarker.timeMs
+                        buttonText = if (isLooping) {
+                            "${formatTime(startMarker)} - ${formatTime(endMarker)}on"
+                        } else {
+                            "${formatTime(startMarker)} - ${formatTime(endMarker)}off"
+                        }
+                    } else {
+                        buttonText = "循环播放"
+                    }
+                }
                 Button(onClick = {
                     val previousMarker = markers.lastOrNull { it.timeMs <= currentPosition }
                     val nextMarker = markers.firstOrNull { it.timeMs > currentPosition }
@@ -266,9 +283,9 @@ fun VideoPlayerWithTime(
                 }) {
                     Text(
                         if (isLooping)
-                            "${formatTime(startMarker)} - ${formatTime(endMarker)}"
+                            "${formatTime(startMarker)} - ${formatTime(endMarker)}on"
                         else
-                            "循环播放off"
+                            "${formatTime(startMarker)} - ${formatTime(endMarker)}off"
                     )
                 }
             }
